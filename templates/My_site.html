@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 5 Champion 🏆</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#ff7eb3,#ff758c,#ffd3e1);
+min-height:100vh;
+overflow-x:hidden;
+color:white;
+text-align:center;
+}
+
+.container{
+padding:30px;
+max-width:900px;
+margin:auto;
+}
+
+h1{
+font-size:3rem;
+margin-top:20px;
+animation:bounce 2s infinite;
+}
+
+@keyframes bounce{
+50%{transform:translateY(-10px);}
+}
+
+.win-card{
+background:rgba(255,255,255,0.18);
+backdrop-filter:blur(15px);
+padding:30px;
+border-radius:25px;
+margin-top:25px;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+.achievement{
+background:rgba(255,255,255,0.2);
+margin:15px 0;
+padding:15px;
+border-radius:15px;
+font-size:1.1rem;
+}
+
+button{
+margin-top:25px;
+padding:15px 30px;
+border:none;
+border-radius:50px;
+font-size:1rem;
+font-weight:bold;
+cursor:pointer;
+background:white;
+color:#ff4d88;
+transition:.3s;
+}
+
+button:hover{
+transform:scale(1.1);
+}
+
+#loveLetter{
+display:none;
+margin-top:25px;
+font-size:1.2rem;
+line-height:1.8;
+animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+from{
+opacity:0;
+transform:translateY(20px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.heart{
+position:fixed;
+bottom:-30px;
+pointer-events:none;
+animation:floatUp linear forwards;
+}
+
+@keyframes floatUp{
+to{
+transform:translateY(-120vh) rotate(360deg);
+opacity:0;
+}
+}
+
+.confetti{
+position:fixed;
+top:-20px;
+width:10px;
+height:10px;
+animation:fall linear forwards;
+}
+
+@keyframes fall{
+to{
+transform:translateY(110vh) rotate(720deg);
+opacity:0;
+}
+}
+
+.footer{
+margin-top:40px;
+font-size:1rem;
+padding-bottom:30px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>🏆 DAY 5 COMPLETE 🏆</h1>
+
+<div class="win-card">
+
+<h2>🎉 Congratulations Beautiful 🎉</h2>
+
+<p style="margin-top:15px;">
+You have officially defeated this month's period.
+The final boss has been conquered.
+The kingdom is safe.
+The chocolate reserves can recover.
+</p>
+
+<div class="achievement">
+🥇 Achievement Unlocked:
+<b>Strongest Girl Ever</b>
+</div>
+
+<div class="achievement">
+💖 Achievement Unlocked:
+<b>Still Cute Even When Grumpy</b>
+</div>
+
+<div class="achievement">
+🌸 Achievement Unlocked:
+<b>Professional Period Survivor</b>
+</div>
+
+<div class="achievement">
+👑 Achievement Unlocked:
+<b>Queen of My Heart</b>
+</div>
+
+<button onclick="openLetter()">
+Open Your Reward 💌
+</button>
+
+<div id="loveLetter">
+
+💖 Dear Beautiful,
+
+<br><br>
+
+This isn't really a reward.
+
+Because the truth is...
+
+I'm the lucky one.
+
+<br><br>
+
+Thank you for being you.
+
+Thank you for your smile.
+
+Thank you for your laugh.
+
+Thank you for existing.
+
+<br><br>
+
+I know this week wasn't always comfortable,
+but you got through it.
+
+And I'm proud of you.
+
+<br><br>
+
+If I could choose one person to annoy forever...
+
+it would still be you. 😘
+
+<br><br>
+
+❤️ Love Meter: Infinite ❤️
+
+</div>
+
+</div>
+
+<div class="footer">
+✨ Certified by the Department of Unlimited Hugs ✨
+</div>
+
+</div>
+
+<script>
+
+function openLetter(){
+document.getElementById("loveLetter").style.display="block";
+launchConfetti();
+}
+
+function createHeart(){
+const heart=document.createElement("div");
+
+heart.className="heart";
+
+const emojis=["❤️","💕","💖","💗","🌸","✨"];
+
+heart.innerHTML=
+emojis[Math.floor(Math.random()*emojis.length)];
+
+heart.style.left=Math.random()*100+"vw";
+heart.style.fontSize=(20+Math.random()*25)+"px";
+heart.style.animationDuration=(4+Math.random()*4)+"s";
+
+document.body.appendChild(heart);
+
+setTimeout(()=>{
+heart.remove();
+},8000);
+}
+
+setInterval(createHeart,250);
+
+function launchConfetti(){
+
+for(let i=0;i<150;i++){
+
+const confetti=document.createElement("div");
+
+confetti.className="confetti";
+
+confetti.style.left=Math.random()*100+"vw";
+
+confetti.style.background=
+`hsl(${Math.random()*360},100%,70%)`;
+
+confetti.style.animationDuration=
+(3+Math.random()*3)+"s";
+
+document.body.appendChild(confetti);
+
+setTimeout(()=>{
+confetti.remove();
+},7000);
+}
+}
+
+window.onload=launchConfetti;
+
+</script>
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Rāil — Your Wardrobe, Sorted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#221B26;
+    --panel:#2C2432;
+    --panel-2:#372C3F;
+    --thread:#4A3D53;
+    --mustard:#D9A441;
+    --mustard-dim:#B8862E;
+    --rose:#C9705F;
+    --cream:#F3ECE0;
+    --cream-dim:#C9C0B6;
+    --ok:#7FA672;
+    --radius:18px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--cream);
+    font-family:'Work Sans',sans-serif;
+    min-height:100vh;
+    overscroll-behavior:none;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    position:relative;
+    background:
+      radial-gradient(600px 300px at 50% -80px, rgba(217,164,65,0.10), transparent),
+      var(--ink);
+    padding-bottom:86px;
+  }
+  .screen{display:none; animation:fadeIn .25s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---- Top tag/hanger motif (signature element) ---- */
+  .hanger-mark{
+    display:flex; align-items:center; justify-content:center;
+    padding:22px 0 6px;
+  }
+  .hanger-mark svg{width:34px; height:34px;}
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px 8px;
+  }
+  .topbar .display{font-size:22px; margin:0;}
+  .pill{
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    padding:5px 10px; border-radius:100px; border:1px solid var(--thread);
+    color:var(--cream-dim);
+  }
+  .pill.premium{background:var(--mustard); color:#241a08; border-color:var(--mustard); font-weight:700;}
+
+  /* ---- Onboarding ---- */
+  .onboard{padding:60px 28px 28px; text-align:center;}
+  .onboard .tagline{color:var(--cream-dim); font-size:15px; margin:10px 0 40px; line-height:1.5;}
+  .onboard h1{font-size:34px; margin:0; line-height:1.1;}
+  .onboard h1 em{color:var(--mustard); font-style:normal;}
+  .choice-grid{display:grid; gap:12px; margin-top:8px;}
+  .choice-card{
+    background:var(--panel); border:1px solid var(--thread); border-radius:var(--radius);
+    padding:18px 20px; text-align:left; color:var(--cream); font-size:16px; font-weight:600;
+    display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+  }
+  .choice-card:active{background:var(--panel-2);}
+  .choice-card.selected{border-color:var(--mustard); box-shadow:0 0 0 1px var(--mustard) inset;}
+  .choice-card small{display:block; font-weight:400; color:var(--cream-dim); font-size:12.5px; margin-top:2px;}
+
+  .btn{
+    width:100%; padding:16px; border-radius:100px; border:none;
+    font-family:'Work Sans',sans-serif; font-weight:700; font-size:15.5px;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--mustard); color:#241a08;}
+  .btn-primary:active{background:var(--mustard-dim);}
+  .btn-ghost{background:transparent; color:var(--cream-dim); border:1px solid var(--thread);}
+  .btn-block{margin-top:22px;}
+  .btn:disabled{opacity:.4;}
+
+  .field{
+    background:var(--panel); border:1px solid var(--thread); border-radius:14px;
+    padding:15px 16px; color:var(--cream); font-size:15px; width:100%;
+    font-family:'Work Sans',sans-serif;
+  }
+  .field::placeholder{color:#8b8091;}
+  .field-label{font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--cream-dim); margin:18px 0 8px; display:block; text-align:left;}
+
+  /* ---- Bottom nav ---- */
+  .navbar{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px; background:var(--panel);
+    border-top:1px solid var(--thread);
+    display:flex; padding:10px 6px 20px;
+    z-index:20;
+  }
+  .navbtn{
+    flex:1; background:none; border:none; color:var(--cream-dim);
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    font-size:10.5px; letter-spacing:.03em; font-family:'Work Sans',sans-serif; font-weight:600;
+    padding:6px 0; cursor:pointer;
+  }
+  .navbtn svg{width:22px; height:22px;}
+  .navbtn.active{color:var(--mustard);}
+
+  /* ---- Closet ---- */
+  .tabs{display:flex; gap:8px; padding:14px 20px 4px; overflow-x:auto;}
+  .tab{
+    padding:8px 16px; border-radius:100px; border:1px solid var(--thread);
+    color:var(--cream-dim); font-size:13.5px; font-weight:600; white-space:nowrap; cursor:pointer;
+  }
+  .tab.active{background:var(--mustard); color:#241a08; border-color:var(--mustard);}
+
+  .grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:16px 20px 8px;
+  }
+  .item-card{
+    background:var(--panel); border:1px solid var(--thread); border-radius:14px; overflow:hidden;
+    position:relative; aspect-ratio:3/4;
+  }
+  .item-card img{width:100%; height:100%; object-fit:cover; display:block;}
+  .item-tag{
+    position:absolute; top:6px; left:6px; background:rgba(34,27,38,.82);
+    font-size:9.5px; padding:3px 7px; border-radius:100px; color:var(--cream);
+    text-transform:uppercase; letter-spacing:.03em;
+  }
+  .item-del{
+    position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%;
+    background:rgba(34,27,38,.82); border:none; color:var(--cream); font-size:13px; cursor:pointer;
+  }
+  .empty-state{
+    text-align:center; padding:60px 30px; color:var(--cream-dim);
+  }
+  .empty-state .hole{
+    width:44px; height:44px; border-radius:50%; border:2px dashed var(--thread);
+    margin:0 auto 16px;
+  }
+
+  /* ---- Add item ---- */
+  .add-wrap{padding:20px;}
+  .camera-box{
+    border:1.5px dashed var(--thread); border-radius:var(--radius);
+    padding:34px 16px; text-align:center; color:var(--cream-dim); margin-bottom:18px;
+    position:relative; overflow:hidden;
+  }
+  .camera-box.has-img{padding:0; border-style:solid;}
+  .camera-box img{width:100%; display:block; max-height:280px; object-fit:cover;}
+  .camera-box input{position:absolute; inset:0; opacity:0; cursor:pointer;}
+  .cam-icon{width:30px; height:30px; margin-bottom:10px; opacity:.7;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .chip{
+    padding:9px 14px; border-radius:100px; border:1px solid var(--thread);
+    font-size:13.5px; color:var(--cream-dim); cursor:pointer; font-weight:600;
+  }
+  .chip.on{background:var(--rose); color:#231016; border-color:var(--rose);}
+
+  /* ---- Style Me ---- */
+  .style-wrap{padding:20px;}
+  .outfit-card{
+    background:var(--panel); border:1px solid var(--thread); border-radius:var(--radius);
+    padding:18px; margin-top:20px;
+  }
+  .outfit-row{display:flex; gap:10px; margin-bottom:10px;}
+  .outfit-row .slot{
+    flex:1; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--panel-2);
+    display:flex; align-items:center; justify-content:center; color:var(--cream-dim); font-size:11px;
+  }
+  .outfit-row .slot img{width:100%; height:100%; object-fit:cover;}
+  .locked-blur{filter:blur(6px); pointer-events:none;}
+
+  /* ---- Paywall ---- */
+  .paywall{
+    background:linear-gradient(160deg, var(--panel), var(--panel-2));
+    border:1px solid var(--mustard-dim); border-radius:var(--radius);
+    padding:22px; margin:18px 20px;
+  }
+  .paywall ul{padding-left:0; list-style:none; margin:14px 0;}
+  .paywall li{padding:6px 0; font-size:14px; color:var(--cream-dim); display:flex; gap:10px; align-items:flex-start;}
+  .paywall li:before{content:"✓"; color:var(--mustard); font-weight:700;}
+  .price{font-size:26px; font-weight:700; font-family:'Fraunces',serif; margin:4px 0;}
+  .price span{font-size:13px; font-weight:400; color:var(--cream-dim); font-family:'Work Sans',sans-serif;}
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:50;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .modal-backdrop.hidden{display:none;}
+  .modal{
+    background:var(--panel); width:100%; max-width:480px; border-radius:24px 24px 0 0;
+    padding:26px 22px 34px; text-align:center;
+  }
+  .toast{
+    position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+    background:var(--cream); color:var(--ink); padding:11px 18px; border-radius:100px;
+    font-size:13.5px; font-weight:600; z-index:60; opacity:0; transition:opacity .25s;
+  }
+  .toast.show{opacity:1;}
+  .muted{color:var(--cream-dim); font-size:13.5px; line-height:1.5;}
+  .section-pad{padding:20px;}
+  .counter{font-size:12px; color:var(--cream-dim); text-align:center; margin-top:10px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SCREEN: GENDER -->
+  <section class="screen active" id="screen-gender">
+    <div class="onboard">
+      <div class="hanger-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a2 2 0 1 1 2 2c-.3.2-.6.4-.6.9v.6l7.4 4.7c1 .6 1.6 1.7 1.6 2.9v.4H1.6v-.4c0-1.2.6-2.3 1.6-2.9L10.6 6.5v-.6c0-.5-.3-.7-.6-.9A2 2 0 1 1 12 3Z" stroke="#D9A441" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>Every outfit,<br><em>one tap away.</em></h1>
+      <p class="tagline">Photograph your closet once. Rāil remembers it forever — and dresses you for whatever's next.</p>
+      <div class="choice-grid" id="gender-grid">
+        <div class="choice-card" data-g="Women">Women<small>Tops, bottoms & footwear tuned for you</small></div>
+        <div class="choice-card" data-g="Men">Men<small>Tops, bottoms & footwear tuned for you</small></div>
+        <div class="choice-card" data-g="Unisex">Show me everything<small>No filter — full catalog of cuts & styles</small></div>
+      </div>
+      <button class="btn btn-primary btn-block" id="btn-gender-next" disabled>Continue</button>
+    </div>
+  </section>
+
+  <!-- SCREEN: LOGIN -->
+  <section class="screen" id="screen-login">
+    <div class="onboard" style="padding-top:80px;">
+      <h1 style="font-size:28px;">Sign in to<br><em>build your closet</em></h1>
+      <p class="tagline">Your wardrobe stays saved on this phone, tied to your email.</p>
+      <label class="field-label">Email address</label>
+      <input class="field" id="login-email" type="email" placeholder="you@email.com" autocomplete="email">
+      <button class="btn btn-primary btn-block" id="btn-login">Continue</button>
+      <p class="muted" style="margin-top:16px;">By continuing you agree this is a demo build — no real account is created anywhere else.</p>
+    </div>
+  </section>
+
+  <!-- SCREEN: HOME / CLOSET -->
+  <section class="screen" id="screen-closet">
+    <div class="topbar">
+      <h1 class="display">Your Closet</h1>
+      <span class="pill" id="premium-pill">Free</span>
+    </div>
+    <div class="tabs" id="closet-tabs">
+      <div class="tab active" data-cat="top">Tops</div>
+      <div class="tab" data-cat="bottom">Bottoms</div>
+      <div class="tab" data-cat="footwear">Footwear</div>
+    </div>
+    <div class="grid" id="closet-grid"></div>
+    <div class="counter" id="closet-counter"></div>
+  </section>
+
+  <!-- SCREEN: ADD ITEM -->
+  <section class="screen" id="screen-add">
+    <div class="topbar"><h1 class="display">Add a Piece</h1><span></span></div>
+    <div class="add-wrap">
+      <div class="camera-box" id="camera-box">
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="#C9C0B6" stroke-width="1.4"/><circle cx="12" cy="13.5" r="3.5" stroke="#C9C0B6" stroke-width="1.4"/></svg>
+        <div>Tap to take a photo or choose from gallery</div>
+        <input type="file" accept="image/*" capture="environment" id="file-input">
+      </div>
+
+      <label class="field-label">Category</label>
+      <div class="chip-row" id="cat-chips">
+        <div class="chip" data-cat="top">Top</div>
+        <div class="chip" data-cat="bottom">Bottom</div>
+        <div class="chip" data-cat="footwear">Footwear</div>
+      </div>
+
+      <label class="field-label">Type</label>
+      <div class="chip-row" id="sub-chips"></div>
+
+      <label class="field-label">Vibe (pick all that fit)</label>
+      <div class="chip-row" id="style-chips">
+        <div class="chip" data-style="casual">Casual</div>
+        <div class="chip" data-style="formal">Formal</div>
+        <div class="chip" data-style="traditional">Traditional</div>
+        <div class="chip" data-style="streetwear">Streetwear</div>
+        <div class="chip" data-style="sport">Sport</div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="btn-save-item">Add to Closet</button>
+      <button class="btn btn-ghost btn-block" id="btn-cancel-item">Cancel</button>
+    </div>
+  </section>
+
+  <!-- SCREEN: STYLE ME -->
+  <section class="screen" id="screen-style">
+    <div class="topbar"><h1 class="display">Style Me</h1><span></span></div>
+    <div class="style-wrap">
+      <label class="field-label">What's the occasion?</label>
+      <div class="chip-row" id="occasion-chips">
+        <div class="chip" data-occ="Casual Hangout">Casual Hangout</div>
+        <div class="chip" data-occ="Work / Office">Work / Office</div>
+        <div class="chip" data-occ="Date Night">Date Night</div>
+        <div class="chip" data-occ="Wedding / Function">Wedding / Function</div>
+        <div class="chip" data-occ="Gym / Sport">Gym / Sport</div>
+      </div>
+      <label class="field-label">Lean the fit toward</label>
+      <div class="chip-row" id="aesthetic-chips">
+        <div class="chip" data-a="casual">Casual</div>
+        <div class="chip" data-a="formal">Formal</div>
+        <div class="chip" data-a="traditional">Traditional</div>
+        <div class="chip" data-a="streetwear">Streetwear</div>
+      </div>
+      <button class="btn btn-primary btn-block" id="btn-generate">Build my outfit</button>
+
+      <div id="outfit-result"></div>
+    </div>
+  </section>
+
+  <!-- SCREEN: PROFILE -->
+  <section class="screen" id="screen-profile">
+    <div class="topbar"><h1 class="display">Profile</h1><span></span></div>
+    <div class="section-pad">
+      <p class="muted" id="profile-email" style="font-size:15px; color:var(--cream);"></p>
+      <p class="muted" id="profile-status"></p>
+
+      <div class="paywall" id="paywall-box">
+        <h2 style="margin:0 0 6px; font-size:19px;">Rāil Premium</h2>
+        <div class="price">₹149<span>/month</span></div>
+        <ul>
+          <li>Unlimited closet items (free: 12)</li>
+          <li>Unlimited outfit generations (free: 3/day)</li>
+          <li>Save & revisit past outfits</li>
+          <li>Style-shuffle: skip a suggestion instantly</li>
+        </ul>
+        <button class="btn btn-primary" id="btn-upgrade" style="width:100%;">Upgrade</button>
+      </div>
+
+      <button class="btn btn-ghost btn-block" id="btn-logout">Switch account</button>
+    </div>
+  </section>
+
+  <!-- BOTTOM NAV (hidden on onboarding/login) -->
+  <nav class="navbar" id="navbar" style="display:none;">
+    <button class="navbtn active" data-go="screen-closet">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 8h16M4 12h10M4 16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Closet
+    </button>
+    <button class="navbtn" data-go="screen-add">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Add
+    </button>
+    <button class="navbtn" data-go="screen-style">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 12l10 9 10-9-10-9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      Style Me
+    </button>
+    <button class="navbtn" data-go="screen-profile">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 20c1.4-4 4-6 7.5-6s6.1 2 7.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Profile
+    </button>
+  </nav>
+
+  <!-- MODAL: fake payment -->
+  <div class="modal-backdrop hidden" id="modal">
+    <div class="modal">
+      <h2 style="margin-top:0;">Upgrade to Premium</h2>
+      <p class="muted">This demo build has no live payment processor wired up — that only connects once the app is published through Google Play Billing. Tap below to simulate it for now.</p>
+      <button class="btn btn-primary btn-block" id="btn-confirm-upgrade">Simulate ₹149 payment</button>
+      <button class="btn btn-ghost btn-block" id="btn-close-modal">Not now</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const PREMIUM_EMAIL = "aditya.shelar0523@gmail.com";
+  const FREE_ITEM_LIMIT = 12;
+  const FREE_DAILY_OUTFITS = 3;
+
+  const SUBCATS = {
+    top: ["T-Shirt","Full-Sleeve Shirt","Half-Sleeve Shirt","Polo","Hoodie","Sweater","Kurta"],
+    bottom: ["Jeans","Cargo","Chinos","Formal Trousers","Joggers","Shorts"],
+    footwear: ["Sneakers","Formal Shoes","Sandals","Boots","Sports Shoes"]
+  };
+  const OCC_TO_STYLE = {
+    "Casual Hangout":"casual","Work / Office":"formal","Date Night":"casual",
+    "Wedding / Function":"traditional","Gym / Sport":"sport"
+  };
+
+  const $ = (sel,root=document)=>root.querySelector(sel);
+  const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
+
+  let state = {
+    gender: null,
+    email: null,
+    items: [],
+    dailyOutfits: {date:null, count:0}
+  };
+
+  function save(){ localStorage.setItem('rail_state', JSON.stringify(state)); }
+  function load(){
+    const raw = localStorage.getItem('rail_state');
+    if(raw){ state = Object.assign(state, JSON.parse(raw)); }
+  }
+
+  function isPremium(){
+    if(!state.email) return false;
+    if(state.email.trim().toLowerCase() === PREMIUM_EMAIL) return true;
+    return !!state.premiumPurchased;
+  }
+
+  function toast(msg){
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  function showScreen(id){
+    $$('.screen').forEach(s=>s.classList.remove('active'));
+    $('#'+id).classList.add('active');
+    $$('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.go===id));
+  }
+
+  /* ---------- Onboarding: gender ---------- */
+  let pendingGender = null;
+  $('#gender-grid').addEventListener('click', (e)=>{
+    const card = e.target.closest('.choice-card'); if(!card) return;
+    $$('.choice-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    pendingGender = card.dataset.g;
+    $('#btn-gender-next').disabled = false;
+  });
+  $('#btn-gender-next').addEventListener('click', ()=>{
+    state.gender = pendingGender; save();
+    showScreen('screen-login');
+  });
+
+  /* ---------- Login ---------- */
+  $('#btn-login').addEventListener('click', ()=>{
+    const val = $('#login-email').value.trim();
+    if(!val || !val.includes('@')){ toast('Enter a valid email'); return; }
+    state.email = val; save();
+    if(isPremium()) toast('Welcome back — Founder access unlocked');
+    enterApp();
+  });
+
+  function enterApp(){
+    $('#navbar').style.display = 'flex';
+    showScreen('screen-closet');
+    renderClosetTab('top');
+    renderProfile();
+  }
+
+  /* ---------- Nav ---------- */
+  $('#navbar').addEventListener('click', (e)=>{
+    const b = e.target.closest('.navbtn'); if(!b) return;
+    if(b.dataset.go === 'screen-add') resetAddForm();
+    if(b.dataset.go === 'screen-profile') renderProfile();
+    showScreen(b.dataset.go);
+  });
+
+  /* ---------- Closet tabs ---------- */
+  let activeCat = 'top';
+  $('#closet-tabs').addEventListener('click', (e)=>{
+    const t = e.target.closest('.tab'); if(!t) return;
+    $$('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    activeCat = t.dataset.cat;
+    renderClosetTab(activeCat);
+  });
+
+  function renderClosetTab(cat){
+    const grid = $('#closet-grid');
+    const items = state.items.filter(i=>i.cat===cat);
+    grid.innerHTML = '';
+    if(items.length===0){
+      grid.style.display='block';
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="hole"></div>No ${cat}s yet — tap "Add" below to snap your first one.</div>`;
+    } else {
+      grid.style.display='grid';
+      items.forEach(item=>{
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `<img src="${item.img}" alt="${item.sub}"><span class="item-tag">${item.sub}</span><button class="item-del" data-id="${item.id}">✕</button>`;
+        grid.appendChild(card);
+      });
+    }
+    $('#closet-counter').textContent = isPremium()
+      ? `${state.items.length} items · unlimited on Premium`
+      : `${state.items.length} / ${FREE_ITEM_LIMIT} items on Free`;
+  }
+
+  $('#closet-grid').addEventListener('click', (e)=>{
+    const del = e.target.closest('.item-del'); if(!del) return;
+    state.items = state.items.filter(i=>i.id !== del.dataset.id);
+    save(); renderClosetTab(activeCat);
+  });
+
+  /* ---------- Add item ---------- */
+  let draft = {cat:null, sub:null, styles:[], img:null};
+
+  function resetAddForm(){
+    draft = {cat:null, sub:null, styles:[], img:null};
+    $('#camera-box').classList.remove('has-img');
+    $('#camera-box').innerHTML = `
+      <svg class="cam-icon" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="#C9C0B6" stroke-width="1.4"/><circle cx="12" cy="13.5" r="3.5" stroke="#C9C0B6" stroke-width="1.4"/></svg>
+      <div>Tap to take a photo or choose from gallery</div>
+      <input type="file" accept="image/*" capture="environment" id="file-input">`;
+    bindFileInput();
+    $$('.chip[data-cat]').forEach(c=>c.classList.remove('on'));
+    $$('.chip[data-style]').forEach(c=>c.classList.remove('on'));
+    $('#sub-chips').innerHTML = '';
+  }
+
+  function bindFileInput(){
+    $('#file-input').addEventListener('change', (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      compressImage(file, 640, (dataUrl)=>{
+        draft.img = dataUrl;
+        const box = $('#camera-box');
+        box.classList.add('has-img');
+        box.innerHTML = `<img src="${dataUrl}"><input type="file" accept="image/*" capture="environment" id="file-input">`;
+        bindFileInput();
+      });
+    });
+  }
+  bindFileInput();
+
+  function compressImage(file, maxDim, cb){
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = h*(maxDim/w); w = maxDim; }
+        else if(h > maxDim){ w = w*(maxDim/h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        cb(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  $('#cat-chips').addEventListener('click', (e)=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    $$('#cat-chips .chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    draft.cat = c.dataset.cat; draft.sub = null;
+    const subWrap = $('#sub-chips'); subWrap.innerHTML = '';
+    SUBCATS[draft.cat].forEach(s=>{
+      const chip = document.createElement('div');
+      chip.className = 'chip'; chip.dataset.sub = s; chip.textContent = s;
+      subWrap.appendChild(chip);
+    });
+  });
+
+  $('#sub-chips').addEventListener('click', (e)=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    $$('#sub-chips .chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); draft.sub = c.dataset.sub;
+  });
+
+  $('#style-chips').addEventListener('click', (e)=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    c.classList.toggle('on');
+    const s = c.dataset.style;
+    if(draft.styles.includes(s)) draft.styles = draft.styles.filter(x=>x!==s);
+    else draft.styles.push(s);
+  });
+
+  $('#btn-save-item').addEventListener('click', ()=>{
+    if(!draft.img){ toast('Add a photo first'); return; }
+    if(!draft.cat){ toast('Pick a category'); return; }
+    if(!draft.sub){ toast('Pick a type'); return; }
+    if(draft.styles.length===0){ toast('Pick at least one vibe'); return; }
+    if(!isPremium() && state.items.length >= FREE_ITEM_LIMIT){
+      showScreen('screen-profile'); renderProfile();
+      toast('Free closet is full — upgrade for unlimited items');
+      return;
+    }
+    state.items.push({
+      id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      cat: draft.cat, sub: draft.sub, styles: draft.styles, img: draft.img
+    });
+    save();
+    toast('Added to closet');
+    activeCat = draft.cat;
+    resetAddForm();
+    renderClosetTab(activeCat);
+    showScreen('screen-closet');
+    $$('.tab').forEach(t=>t.classList.toggle('active', t.dataset.cat===activeCat));
+  });
+
+  $('#btn-cancel-item').addEventListener('click', ()=>{
+    resetAddForm(); showScreen('screen-closet');
+  });
+
+  /* ---------- Style Me ---------- */
+  let chosenOcc = null, chosenAesthetic = null;
+  $('#occasion-chips').addEventListener('click', (e)=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    $$('#occasion-chips .chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); chosenOcc = c.dataset.occ;
+    if(!chosenAesthetic){
+      const suggested = OCC_TO_STYLE[chosenOcc];
+      $$('#aesthetic-chips .chip').forEach(x=>x.classList.toggle('on', x.dataset.a===suggested));
+      chosenAesthetic = suggested;
+    }
+  });
+  $('#aesthetic-chips').addEventListener('click', (e)=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    $$('#aesthetic-chips .chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); chosenAesthetic = c.dataset.a;
+  });
+
+  function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+  function canGenerate(){
+    if(isPremium()) return true;
+    if(state.dailyOutfits.date !== todayKey()) return true;
+    return state.dailyOutfits.count < FREE_DAILY_OUTFITS;
+  }
+  function registerGenerate(){
+    if(state.dailyOutfits.date !== todayKey()){
+      state.dailyOutfits = {date: todayKey(), count:0};
+    }
+    state.dailyOutfits.count++;
+    save();
+  }
+
+  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  $('#btn-generate').addEventListener('click', ()=>{
+    if(!chosenOcc){ toast('Pick an occasion'); return; }
+    if(!canGenerate()){
+      $('#outfit-result').innerHTML = '';
+      showScreen('screen-profile'); renderProfile();
+      toast('Daily free outfits used up — upgrade for unlimited');
+      return;
+    }
+    const style = chosenAesthetic || OCC_TO_STYLE[chosenOcc];
+    const pools = {
+      top: state.items.filter(i=>i.cat==='top' && i.styles.includes(style)),
+      bottom: state.items.filter(i=>i.cat==='bottom' && i.styles.includes(style)),
+      footwear: state.items.filter(i=>i.cat==='footwear' && i.styles.includes(style))
+    };
+    const fallbackPools = {
+      top: pools.top.length ? pools.top : state.items.filter(i=>i.cat==='top'),
+      bottom: pools.bottom.length ? pools.bottom : state.items.filter(i=>i.cat==='bottom'),
+      footwear: pools.footwear.length ? pools.footwear : state.items.filter(i=>i.cat==='footwear')
+    };
+    if(!fallbackPools.top.length || !fallbackPools.bottom.length || !fallbackPools.footwear.length){
+      $('#outfit-result').innerHTML = `<div class="outfit-card"><p class="muted">Not enough in your closet yet — add at least one top, one bottom and one pair of footwear to get a full outfit.</p></div>`;
+      return;
+    }
+    registerGenerate();
+    const outfit = {
+      top: pickRandom(fallbackPools.top),
+      bottom: pickRandom(fallbackPools.bottom),
+      footwear: pickRandom(fallbackPools.footwear)
+    };
+    renderOutfit(outfit, chosenOcc, style);
+  });
+
+  function renderOutfit(outfit, occ, style){
+    $('#outfit-result').innerHTML = `
+      <div class="outfit-card">
+        <h3 style="margin:0 0 12px; font-size:16px;">For ${occ} · ${style} lean</h3>
+        <div class="outfit-row">
+          <div class="slot"><img src="${outfit.top.img}"></div>
+          <div class="slot"><img src="${outfit.bottom.img}"></div>
+          <div class="slot"><img src="${outfit.footwear.img}"></div>
+        </div>
+        <p class="muted">${outfit.top.sub} + ${outfit.bottom.sub} + ${outfit.footwear.sub}</p>
+        <button class="btn btn-ghost" id="btn-shuffle" style="width:100%; margin-top:8px;">Shuffle again${isPremium()?'':' (Premium)'}</button>
+      </div>`;
+    $('#btn-shuffle').addEventListener('click', ()=>{
+      if(!isPremium()){ showScreen('screen-profile'); renderProfile(); toast('Shuffle is a Premium feature'); return; }
+      $('#btn-generate').click();
+    });
+  }
+
+  /* ---------- Profile / paywall ---------- */
+  function renderProfile(){
+    $('#profile-email').textContent = state.email || '';
+    const premium = isPremium();
+    $('#profile-status').textContent = premium
+      ? (state.email.trim().toLowerCase()===PREMIUM_EMAIL ? 'Founder access — Premium, free forever.' : 'Premium member.')
+      : `Free plan · ${state.items.length}/${FREE_ITEM_LIMIT} items · ${Math.max(0, FREE_DAILY_OUTFITS - (state.dailyOutfits.date===todayKey()?state.dailyOutfits.count:0))} outfit builds left today.`;
+    $('#premium-pill').textContent = premium ? 'Premium' : 'Free';
+    $('#premium-pill').classList.toggle('premium', premium);
+    $('#paywall-box').style.display = premium ? 'none' : 'block';
+  }
+
+  $('#btn-upgrade').addEventListener('click', ()=> $('#modal').classList.remove('hidden'));
+  $('#btn-close-modal').addEventListener('click', ()=> $('#modal').classList.add('hidden'));
+  $('#btn-confirm-upgrade').addEventListener('click', ()=>{
+    state.premiumPurchased = true; save();
+    $('#modal').classList.add('hidden');
+    renderProfile(); renderClosetTab(activeCat);
+    toast('Premium unlocked (simulated)');
+  });
+
+  $('#btn-logout').addEventListener('click', ()=>{
+    localStorage.removeItem('rail_state');
+    location.reload();
+  });
+
+  /* ---------- Boot ---------- */
+  load();
+  if(state.email && state.gender){
+    enterApp();
+  } else if(state.gender){
+    showScreen('screen-login');
+  }
+})();
+</script>
+</body>
+</html>
